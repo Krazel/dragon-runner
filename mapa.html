@@ -26,8 +26,6 @@
     .route-info{ background:#141925; border-radius:8px; padding:8px; margin-bottom:8px; font-size:12px; display:none; }
     .nav-buttons{ display:flex; gap:4px; flex-wrap:wrap; }
     .nav-buttons button{ flex:1; min-width:80px; }
-    .route-type{ padding:4px 8px !important; border:1px solid rgba(255,255,255,.2) !important; border-radius:6px !important; font-size:10px !important; margin:0 !important; flex:1; }
-    .route-type.active{ background:var(--accent) !important; color:#001828 !important; }
   </style>
 </head>
 <body>
@@ -40,13 +38,6 @@
     <div id="routeInfo" class="route-info">
       <div id="routeDistance">Distancia: --</div>
       <div id="routeBearing">Dirección: --</div>
-      <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,.1); padding-top:8px;">
-        <div style="font-weight:600; margin-bottom:4px;">Tipo de ruta:</div>
-        <div style="display:flex; gap:4px;">
-          <button id="routeStraight" class="route-type">📏 Recta</button>
-          <button id="routeRoad" class="route-type active">🛣️ Calles</button>
-        </div>
-      </div>
     </div>
     <div class="nav-buttons">
       <button id="goTo" class="accent">Ir aquí</button>
@@ -62,14 +53,13 @@
       <button id="pause">Pausar</button>
       <button id="reset">Reset tramo</button>
       <button id="clear">Borrar todo</button>
-      <a href="./radar.html" class="chip">→ Modo Radar</a>
+      <a href="./index.html" class="chip">← Modo Radar</a>
     </div>
     <div>
       <span class="chip" id="status">Parado</span>
       <span class="chip" id="points">Puntos: 0</span>
       <span class="chip" id="loops">Bucles: 0</span>
       <span class="chip" id="gps">GPS: inactivo</span>
-      <span class="chip" id="speed">Velocidad: 0 km/h</span>
     </div>
   </div>
   <div class="footer">

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dragon Runner – Mapa</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root{ --bg:#0b0d12; --fg:#e9ecef; --accent:#4dabf7; --good:#51cf66; --warn:#fab005; --bad:#fa5252; }
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--fg); font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    #map{ position:absolute; inset:0; }
+    
+    /* Responsive toolbar */
+    .toolbar{ 
+      position:fixed; left:12px; top:12px; z-index:1000; 
+      background:#0f1219; border:1px solid rgba(255,255,255,.12); 
+      border-radius:14px; padding:10px; backdrop-filter: blur(6px);
+      max-width: calc(100vw - 24px);
+    }
+    .toolbar button{ 
+      padding:8px 10px; border:0; border-radius:10px; 
+      background:#141925; color:var(--fg); font-weight:600; 
+      cursor:pointer; margin-right:6px; margin-bottom:4px;
+      font-size:12px;
+    }
+    .chip{ 
+      display:inline-block; padding:6px 10px; border-radius:999px; 
+      background:#141925; border:1px solid rgba(255,255,255,.12); 
+      margin-right:6px; margin-bottom:4px; font-size:11px;
+    }
+    .footer{ 
+      position:fixed; left:12px; bottom:12px; right:12px; z-index:1000; 
+      display:flex; justify-content:space-between; align-items:center; gap:8px;
+      font-size:11px;
+    }
+    .footer a{ color:var(--accent); text-decoration:none }
+    
+    /* Responsive Search Panel */
+    .search-panel{ 
+      position:fixed; right:12px; top:12px; z-index:1000; 
+      background:#0f1219; border:1px solid rgba(255,255,255,.12); 
+      border-radius:14px; padding:10px; backdrop-filter: blur(6px);
+      width: calc(100vw - 24px);
+      max-width:320px;
+      box-sizing:border-box;
+    }
+    .search-panel input{ 
+      width:100%; padding:10px; border:1px solid rgba(255,255,255,.15); 
+      border-radius:8px; background:#141925; color:var(--fg); 
+      margin-bottom:8px; box-sizing:border-box; font-size:14px;
+    }
+    .search-panel button{ 
+      padding:8px 12px; border:0; border-radius:8px; 
+      background:#141925; color:var(--fg); font-weight:600; 
+      cursor:pointer; margin-right:6px; margin-bottom:4px;
+      font-size:12px;
+    }
+    .search-panel button.accent{ background:var(--accent); color:#001828; }
+    .search-results{ max-height:200px; overflow-y:auto; margin-bottom:8px; }
+    .search-item{ 
+      padding:10px; background:#141925; border-radius:8px; 
+      cursor:pointer; margin-bottom:4px; font-size:13px;
+      word-wrap:break-word;
+    }
+    .search-item:hover{ background:#1e2936; }
+    .route-info{ 
+      background:#141925; border-radius:8px; padding:10px; 
+      margin-bottom:8px; font-size:12px; display:none; 
+    }
+    .nav-buttons{ display:flex; gap:6px; flex-wrap:wrap; }
+    .nav-buttons button{ flex:1; min-width:90px; }
+    .route-type{ 
+      padding:6px 8px !important; border:1px solid rgba(255,255,255,.2) !important; 
+      border-radius:6px !important; font-size:11px !important; 
+      margin:0 !important; flex:1; text-align:center;
+    }
+    .route-type.active{ background:var(--accent) !important; color:#001828 !important; }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+      .toolbar {
+        left:8px; top:8px; padding:8px;
+        max-width: calc(100vw - 16px);
+      }
+      
+      .search-panel {
+        right:8px; top:8px; padding:8px;
+        width: calc(100vw - 16px);
+        max-width: none;
+      }
+      
+      .footer {
+        left:8px; bottom:8px; right:8px;
+        font-size:10px;
+        flex-direction:column;
+        gap:4px;
+        text-align:center;
+      }
+      
+      .chip {
+        font-size:10px;
+        padding:4px 8px;
+        margin-right:4px;
+        margin-bottom:2px;
+      }
+      
+      .toolbar button {
+        font-size:11px;
+        padding:6px 8px;
+      }
+      
+      .search-panel input {
+        font-size:16px; /* Prevents zoom on iOS */
+        padding:12px;
+      }
+      
+      .nav-buttons button {
+        min-width:70px;
+        font-size:11px;
+        padding:8px 6px;
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 480px) {
+      .search-panel {
+        position:fixed;
+        top:8px;
+        left:8px;
+        right:8px;
+        width:auto;
+        max-width:none;
+      }
+      
+      .toolbar {
+        top:auto;
+        bottom:60px;
+        left:8px;
+        right:8px;
+        width:auto;
+        max-width:none;
+      }
+      
+      .footer {
+        bottom:8px;
+        font-size:9px;
+      }
+      
+      .nav-buttons {
+        gap:4px;
+      }
+      
+      .nav-buttons button {
+        min-width:60px;
+        font-size:10px;
+        padding:6px 4px;
+      }
+      
+      .route-type {
+        font-size:10px !important;
+        padding:4px 6px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <div class="search-panel">
+    <div style="margin-bottom:8px; font-weight:700; font-size:14px;">🔍 Navegación</div>
+    <input id="searchInput" placeholder="Buscar destino..." autocomplete="off" />
+    <div id="searchResults" class="search-results"></div>
+    <div id="routeInfo" class="route-info">
+      <div id="routeDistance">Distancia: --</div>
+      <div id="routeBearing">Dirección: --</div>
+      <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,.1); padding-top:8px;">
+        <div style="font-weight:600; margin-bottom:4px;">Tipo de ruta:</div>
+        <div style="display:flex; gap:4px;">
+          <button id="routeStraight" class="route-type">📏 Recta</button>
+          <button id="routeRoad" class="route-type active">🛣️ Calles</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <button id="goTo" class="accent">Ir aquí</button>
+      <button id="centerMe">Mi ubicación</button>
+      <button id="clearRoute">Limpiar ruta</button>
+    </div>
+  </div>
+  
+  <div class="toolbar">
+    <div style="margin-bottom:8px; font-weight:700">Territorio runner</div>
+    <div style="margin-bottom:8px">
+      <button id="start">Iniciar</button>
+      <button id="pause">Pausar</button>
+      <button id="reset">Reset tramo</button>
+      <button id="clear">Borrar todo</button>
+      <a href="./radar.html" class="chip">→ Modo Radar</a>
+    </div>
+    <div>
+      <span class="chip" id="status">Parado</span>
+      <span class="chip" id="points">Puntos: 0</span>
+      <span class="chip" id="loops">Bucles: 0</span>
+      <span class="chip" id="gps">GPS: inactivo</span>
+      <span class="chip" id="speed">Velocidad: 0 km/h</span>
+    </div>
+  </div>
+  <div class="footer">
+    <div>⚠️ Cierra un bucle volviendo cerca del punto de inicio para reclamar territorio.</div>
+    <div><a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf@7.2.0/turf.min.js"></script>
+  <script src="./mapa.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dragon Radar – brújula a tu destino</title>
+  <style>
+    :root{ --bg:#0b0d12; --fg:#e9ecef; --accent:#4dabf7; --good:#51cf66; --warn:#fab005; --bad:#fa5252; }
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--fg); font-family: system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{ display:grid; grid-template-rows:auto 1fr auto; min-height:100%; }
+    
+    header{ 
+      padding:12px 14px; display:flex; gap:10px; align-items:center; 
+      border-bottom:1px solid rgba(255,255,255,.08); flex-wrap:wrap; 
+      position:relative; z-index:1000; pointer-events:auto; 
+    }
+    header input{ 
+      flex:1 1 auto; padding:10px 12px; border-radius:12px; 
+      border:1px solid rgba(255,255,255,.15); background:#0f1219; 
+      color:var(--fg); min-width:200px; font-size:14px;
+    }
+    header button{ 
+      padding:10px 12px; border:0; border-radius:12px; 
+      background:#141925; color:var(--fg); font-weight:600; 
+      cursor:pointer; flex-shrink:0; font-size:12px;
+    }
+    header button.accent{ background:var(--accent); color:#001828; }
+
+    main{ display:grid; place-items:center; padding:18px; position:relative; }
+    .radar{ position:relative; width:min(86vmin,560px); aspect-ratio:1/1; }
+
+    .panel{ 
+      max-width:680px; margin:0 auto; padding:12px 16px; 
+      color:#cfd3da; font-size:14px; opacity:.9; 
+    }
+    .stat{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    .chip{ 
+      background:#141925; border:1px solid rgba(255,255,255,.08); 
+      padding:6px 10px; border-radius:999px; font-size:12px;
+      text-align:center;
+    }
+    .hint{ font-size:12px; color:#9aa1ac; text-align:center; margin-top:10px; }
+    
+    footer{ 
+      padding:10px 14px; display:flex; justify-content:space-between; 
+      align-items:center; border-top:1px solid rgba(255,255,255,.08); 
+      flex-wrap:wrap; font-size:12px;
+    }
+    a{ color:var(--accent); text-decoration:none }
+
+    .toast{ 
+      position:fixed; left:50%; top:20px; transform:translateX(-50%); 
+      background:rgba(20,25,37,0.9); color:var(--fg); padding:8px 12px; 
+      border-radius:8px; border:1px solid rgba(255,255,255,.08); 
+      display:none; z-index:2000; backdrop-filter:blur(10px); 
+      font-size:14px; box-shadow:0 4px 12px rgba(0,0,0,0.3);
+      max-width:90vw; text-align:center;
+    }
+
+    .searchbox{ position:relative; flex:1 1 auto; }
+    .results{ 
+      position:absolute; top:46px; left:0; right:0; background:#0f1219; 
+      border:1px solid rgba(255,255,255,.15); border-radius:12px; 
+      box-shadow:0 8px 30px rgba(0,0,0,.35); overflow-y:auto; 
+      max-height:260px; display:none; z-index:5; 
+    }
+    .results .item{ padding:10px 12px; cursor:pointer; font-size:13px; }
+    .results .item:hover{ background:#131a27; }
+
+    /* Pulsación estable en móviles sin romper la rotación */
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity:.9; }
+      50%  { transform: scale(0.75); opacity:.6; }
+      100% { transform: scale(1);   opacity:.9; }
+    }
+    #dot {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    body.minimal .panel, body.minimal footer{ display:none; }
+    body.radaronly header, body.radaronly .panel, body.radaronly footer{ display:none; }
+
+    .exit-layer{ position:fixed; inset:0; z-index:5; background:transparent; }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+      header {
+        padding:8px 10px;
+        gap:8px;
+      }
+      
+      header input {
+        min-width:150px;
+        font-size:16px; /* Prevents zoom on iOS */
+        padding:12px;
+      }
+      
+      header button {
+        padding:8px 10px;
+        font-size:11px;
+      }
+      
+      .panel {
+        padding:8px 12px;
+        font-size:12px;
+      }
+      
+      .stat {
+        gap:8px;
+        justify-content:center;
+      }
+      
+      .chip {
+        font-size:11px;
+        padding:5px 8px;
+      }
+      
+      .hint {
+        font-size:11px;
+        margin-top:8px;
+        padding:0 8px;
+      }
+      
+      footer {
+        padding:8px 10px;
+        font-size:11px;
+        flex-direction:column;
+        gap:4px;
+        text-align:center;
+      }
+      
+      .radar {
+        width:min(90vmin, 400px);
+      }
+      
+      main {
+        padding:12px;
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 480px) {
+      header {
+        padding:6px 8px;
+        flex-direction:column;
+        gap:6px;
+      }
+      
+      header input {
+        width:100%;
+        min-width:auto;
+      }
+      
+      .searchbox {
+        width:100%;
+      }
+      
+      header button {
+        font-size:10px;
+        padding:6px 8px;
+      }
+      
+      .chip {
+        font-size:10px;
+        padding:4px 6px;
+      }
+      
+      .stat {
+        gap:4px;
+      }
+      
+      .hint {
+        font-size:10px;
+      }
+      
+      .radar {
+        width:min(95vmin, 320px);
+      }
+      
+      main {
+        padding:8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="searchbox">
+        <input id="q" placeholder="Busca destino (ej. Estación de Valldoreix)" autocomplete="off" />
+        <div id="rs" class="results"></div>
+      </div>
+      <button id="go" class="accent">Ir</button>
+      <button id="stop">Parar</button>
+      <button id="cal">Calibrar</button>
+      <button id="toggleMinimal">Minimal</button>
+      <button id="toggleRadarOnly">Solo Radar</button>
+      <a href="./index.html" class="chip">← Territorio runner</a>
+    </header>
+
+    <main>
+      <div class="radar" id="radarView">
+        <svg id="svg" viewBox="-100 -100 200 200" width="100%" height="100%" aria-label="radar">
+          <defs>
+            <radialGradient id="rg" cx="0" cy="0" r="1">
+              <stop offset="0%" stop-color="#0f1724" />
+              <stop offset="75%" stop-color="#0c1320" />
+              <stop offset="100%" stop-color="#0a111c" />
+            </radialGradient>
+            <radialGradient id="dotGrad" cx="0" cy="0" r="1">
+              <stop offset="0%" stop-color="#a5d8ff" stop-opacity="1" />
+              <stop offset="100%" stop-color="#4dabf7" stop-opacity="1" />
+            </radialGradient>
+          </defs>
+          <circle cx="0" cy="0" r="95" fill="url(#rg)" stroke="rgba(255,255,255,.12)" stroke-width="1" />
+          <!-- Grupo para ROTAR; el círculo solo PULSA -->
+          <g id="dotWrap" transform="rotate(0)">
+            <circle id="dot" cx="0" cy="-82" r="8" fill="url(#dotGrad)" />
+          </g>
+        </svg>
+      </div>
+      <div class="panel">
+        <div class="stat">
+          <div class="chip">GPS: <span id="gps">inactivo</span></div>
+          <div class="chip">Brújula: <span id="head">–</span></div>
+          <div class="chip">Velocidad: <span id="speed">0 km/h</span></div>
+          <div class="chip">Distancia: <span id="dist">–</span></div>
+          <div class="chip">Rumbo a destino: <span id="bearing">–</span></div>
+        </div>
+        <div class="hint">Consejo: en iPhone, pulsa "Calibrar" y permite "Movimiento y orientación".</div>
+      </div>
+    </main>
+
+    <footer>
+      <div>🧭 Modo radar activo.</div>
+      <div><a href="#" id="demo">Simular</a></div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="./radar.js"></script>
+</body>
+</html>

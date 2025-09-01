@@ -28,6 +28,68 @@
     .nav-buttons button{ flex:1; min-width:80px; }
     .route-type{ padding:4px 8px !important; border:1px solid rgba(255,255,255,.2) !important; border-radius:6px !important; font-size:10px !important; margin:0 !important; flex:1; }
     .route-type.active{ background:var(--accent) !important; color:#001828 !important; }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .search-panel{ 
+        right:8px; 
+        top:8px; 
+        left:8px; 
+        min-width:unset; 
+        width:auto;
+        max-width:none;
+      }
+      .search-panel input{ font-size:16px; } /* Prevents zoom on iOS */
+      .toolbar{ 
+        left:8px; 
+        top:auto; 
+        bottom:80px; 
+        right:8px;
+        width:auto;
+      }
+      .toolbar > div:first-child{ display:none; } /* Hide "Territorio runner" title */
+      .toolbar > div{ 
+        display:flex; 
+        flex-wrap:wrap; 
+        gap:4px; 
+        margin-bottom:6px;
+      }
+      .toolbar button, .toolbar .chip{ 
+        font-size:11px; 
+        padding:6px 8px; 
+        flex:1; 
+        min-width:60px;
+        text-align:center;
+      }
+      .footer{ 
+        left:8px; 
+        bottom:8px; 
+        right:8px; 
+        font-size:11px;
+        flex-direction:column;
+        gap:4px;
+      }
+      .search-results{ max-height:120px; }
+      .route-info{ font-size:11px; }
+      .nav-buttons{ flex-direction:column; }
+      .nav-buttons button{ min-width:unset; }
+    }
+    
+    @media (max-width: 480px) {
+      .search-panel{ 
+        padding:8px; 
+        border-radius:10px;
+      }
+      .toolbar{ 
+        padding:8px; 
+        border-radius:10px;
+      }
+      .toolbar button, .toolbar .chip{ 
+        font-size:10px; 
+        padding:5px 6px;
+        min-width:50px;
+      }
+    }
   </style>
 </head>
 <body>
